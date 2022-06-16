@@ -1,0 +1,9 @@
+#Directories
+server/node_modules
+server/build
+
+# Files
+yarn.lock
+
+#Hidden files
+server/.env
