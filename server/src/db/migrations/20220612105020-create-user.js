@@ -29,6 +29,12 @@ module.exports = {
       gender: {
         type: Sequelize.STRING
       },
+      resetPasswordToken: {
+        type: Sequelize.STRING
+      },
+      resetPasswordExpires: {
+        type: Sequelize.DATE
+      },
       age: {
         type: Sequelize.INTEGER
       },

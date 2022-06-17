@@ -5,7 +5,6 @@ export const signupSchema = joi.object().keys({
   lastName: joi.string().min(3).required().label('lastName').required(),
   gender: joi.any().valid('Male', 'Female', 'Other'),
   age: joi.number().min(1).max(200).message('invalid age'),
-  identificationNumber: joi.number(),
   dob:joi.date(),
   maritalStatus: joi.any().valid('SINGLE', 'MARRIED', 'DIVORCED', 'WIDOWED').required(),
   nationality: joi.string(),
@@ -17,9 +16,11 @@ export const signupSchema = joi.object().keys({
     .message('password must contain atleast 8 characters(upper/lower case, number & symbol)!')
     .label('password').required(),
   confirmPassword: joi.any().valid(joi.ref('password')),
-  status: joi.any().valid('UNVERIFIED', 'PENDING VERIFICATION', 'VERIFIED')
 });
 
+export const additionalUserDetails = joi.object().keys({
+   identificationNumber: joi.number().required(),
+});
 
 export const signInSchema = joi.object().keys({
   email: joi
@@ -31,8 +32,6 @@ export const signInSchema = joi.object().keys({
     .label('email'),
   password: joi.string().required().label('password'),
 });
-
- 
 
 export const passwordResetSchema = joi.object().keys({
   password: joi
@@ -49,4 +48,11 @@ export const verifyUserSchema = joi.object().keys({
   status: joi.any().valid('UNVERIFIED', 'PENDING VERIFICATION', 'VERIFIED')
 });
 
-
+export const verifyResetPasswordSchema = joi.object().keys({
+  newPassword: joi
+    .string()
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/)
+    .message('password must contain atleast 8 characters(upper/lower case, number & symbol)!')
+    .label('newPassword').required(),
+  confirmPassword: joi.any().valid(joi.ref('newPassword')).required(),
+ });

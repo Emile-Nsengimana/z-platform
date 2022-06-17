@@ -11,8 +11,16 @@ class TokenHandler {
    * @param {object} payload
    * @returns {string} token
    */
-  static async generateToken(payload) {
+  static async generateToken(userDetails) {
     try {
+      const payload = {id: userDetails.id,
+        firstName: userDetails.firstName,
+        lastName: userDetails.lastName,
+        gender: userDetails.gender,
+        email: userDetails.email,
+        status: userDetails.status,
+        expiresIn: Math.floor(Date.now() / 1000) + 86400
+        } ;
       const accessToken = await jwt.encode(process.env.ACCESS_TOKEN_SECRET, payload);
       return accessToken.value;
     } catch (error) {

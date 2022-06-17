@@ -37,15 +37,12 @@ class UserService {
       nationality,
       email,
       password: hashedPassword,
-      status: "PENDING VERIFICATION",
-      profileImage,
-      supportDoc,
-      identificationNumber
+      status: "UNVERIFIED",
+      profileImage
     };
 
-
     const user = await User.create(newUser);
-    const { password: _password, status, ...userDetails } = user.dataValues;
+    const { password: _password, status, resetPasswordToken, resetPasswordExpires, ...userDetails } = user.dataValues;
     return userDetails;
   }
 

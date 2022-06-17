@@ -15,7 +15,7 @@ export const sendEmail = async (email, verificationStatus) => {
     <p>You registered account on Company Z has been denied, please contact help@companyz.rw for more details.</p>
     <br />
     <p>Kind Regards, Company z</p>`;
-    
+
     var transporter = nodemailer.createTransport({ sendmail: true })
 
 
@@ -32,4 +32,32 @@ export const sendEmail = async (email, verificationStatus) => {
   }
 };
 
- 
+export const sendResetPasswordLinkEmail = async (email, link) => {
+  try {
+    const message = `
+    <p>Hello</p>
+    <h2>You've asked to reset your password</h2><br/>
+    <br />
+    Dear Emile
+
+    <p>We have received your request to reset your password.</p>
+    <p>Click <u><a href=${link}>here</a></u> to reset your password</p>
+    <p>If you did not request a password reset, ignore this email.</p><br/>
+    <p>Kind Regards, Company z</p>`;
+
+  
+    var transporter = nodemailer.createTransport({ sendmail: true })
+
+    // send mail with defined transport object
+    let info = await transporter.sendMail({
+      from: '"Zplatform" <emilereas7@gmail.com>',
+      to: email,
+      subject: "Account password reset",
+      html: message,
+    });
+
+  } catch (error) {
+    return `error ${error}`;
+  }
+};
+

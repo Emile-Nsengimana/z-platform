@@ -2,86 +2,97 @@ import TokenHandler from '../helpers/tokenHandler';
 import UserService from '../services/user';
 import bcrypt from 'bcrypt';
 import path from 'path';
+import model from "../db/models";
 import imageDataURI from 'image-data-uri';
 import { uploader } from '../middlewares/cloudinary';
 import fs from 'fs';
-import { sendEmail } from "../helpers/sendVerificationEmail";
+import { sendEmail, sendResetPasswordLinkEmail } from "../helpers/sendVerificationEmail";
+import { Op } from 'sequelize';
 
+const crypto = require('crypto');
+const { User } = model;
 
 class UserController {
   /**
    *
    * @param {object} req
    * @param {object} res
-   * @returns {object} created user
+   * @returns {object} created user + token
    */
   static async registerUser(req, res) {
     try {
-      const { firstName,
-        lastName,
-        gender,
-        age,
-        dob,
-        maritalStatus,
-        nationality,
-        email, identificationNumber } = req.body;
+      const { email } = req.body;
       const emailExist = await UserService.getUserByEmail(email);
-      const idExist = await UserService.getUserById(identificationNumber);
-      const UPLOADS = process.env.ADDITIONAL_FILE_PATH;
-      console.log("UPLOADS: ", UPLOADS);
 
-      if (emailExist || idExist)
+      //If user with the same email exist, hart registration
+      if (emailExist) {
         return res.status(409).json({
           message: `email has been used before`,
         });
-  // handle files
-  let profileImage, supportDoc;
- 
-   if (req.files.profilePicture !== undefined) {
-      let dataBuffer = new Buffer.from(req.files.profilePicture[0].buffer);
-      let mediaType = path.extname(req.files.profilePicture[0].originalname).toString();
-      let imageData = imageDataURI.encode(dataBuffer, mediaType);
-      let uploadedImage = await uploader.upload(imageData);
-      profileImage = uploadedImage.url;
-  }
-  if (req.files.additionalDoc !== undefined) {
-    for (const file of req.files.additionalDoc) {
-      const fileName = `${Date.now()}-${req.body.identificationNumber}-${file.originalname}`;
-      const dataBuffer = new Buffer.from(file.buffer);
+      }
 
-      UPLOADS === undefined ? await fs.writeFileSync(`${ __dirname}/../uploads/${fileName}`, dataBuffer, null) 
-      : await fs.writeFileSync(`${UPLOADS}/${fileName}`, dataBuffer, null);
-      supportDoc = fileName;
-    }
-  }
+      // extract the profile image from the request and upload it to cloudinary
+      let profileImage;
+      if (req.files.profilePicture !== undefined) {
+        let dataBuffer = new Buffer.from(req.files.profilePicture[0].buffer);
+        let mediaType = path.extname(req.files.profilePicture[0].originalname).toString();
+        let imageData = imageDataURI.encode(dataBuffer, mediaType);
+        let uploadedImage = await uploader.upload(imageData);
+        profileImage = uploadedImage.url;
+      }
 
-  req.body.profileImage = profileImage;
-  req.body.supportDoc = supportDoc;
+      req.body.profileImage = profileImage; // append the profileImage url from cloudinary to the body
       const user = await UserService.createUser(req.body);
-       const token = await TokenHandler.generateToken({
-        id: user.identificationNumber,
-        firstName,
-        lastName,
-        gender,
-        age,
-        dob,
-        maritalStatus,
-        nationality,
-        email,
-        status: user.status,
-        expiresIn: Math.floor(Date.now() / 1000) + 86400,
-      });
+      const token = await TokenHandler.generateToken(user);
       return res.status(201).json({
         message: 'thank you for joining us, please check your email for verification',
         data: { ...user, token },
       });
     } catch (error) {
-      console.log("Error:", error);
       if (error.errors) return res.status(400).json({ message: error.errors[0].message });
-      return res.status(500).json({ message: 'Server error' });
+      return res.status(500).json({ message: 'server error' });
     }
   }
 
+  static async addUserVerificationInfo(req, res) {
+    try {
+      const { email } = req.user;
+      const { identificationNumber } = req.body;
+
+      const emailExist = await UserService.getUserByEmail(email);
+      const UPLOADS = process.env.ADDITIONAL_FILE_PATH;
+
+      if (!emailExist)
+        return res.status(404).json({
+          message: `user not found`,
+        });
+
+      // handle files
+      let supportDoc;
+
+      if (req.files.additionalDoc !== undefined) {
+        for (const file of req.files.additionalDoc) {
+          const fileName = `${Date.now()}-${req.body.identificationNumber}-${file.originalname}`;
+          const dataBuffer = new Buffer.from(file.buffer);
+
+          UPLOADS === undefined ? await fs.writeFileSync(`${__dirname}/../uploads/${fileName}`, dataBuffer, null)
+            : await fs.writeFileSync(`${UPLOADS}/${fileName}`, dataBuffer, null);
+          supportDoc = fileName;
+        }
+      }
+
+      req.body.supportDoc = supportDoc;
+      const user = await User.update({ identificationNumber, supportDoc, status: 'PENDING VERIFICATION' }, { where: { email } });
+
+      return res.status(200).json({
+        message: 'user info update successfully'
+      });
+    } catch (error) {
+      console.log(">>>>>>>>", error);
+      if (error.errors) return res.status(400).json({ message: error.errors[0].message });
+      return res.status(500).json({ message: 'server error' });
+    }
+  }
 
   /**
    * @param {object} req
@@ -96,20 +107,7 @@ class UserController {
       if (!bcrypt.compareSync(req.body.password, user.password))
         return res.status(401).json({ message: 'invalid credentials' });
 
-      const payload = {
-        id: user.identificationNumber,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        gender: user.gender,
-        age: user.age,
-        dob: user.dob,
-        maritalStatus: user.maritalStatus,
-        nationality: user.nationality,
-        email: user.email,
-        status: user.status,
-        expiresIn: Math.floor(Date.now() / 1000) + 86400,
-      };
-      const token = await TokenHandler.generateToken(payload);
+      const token = await TokenHandler.generateToken(user);
       const { password, ...userInfo } = user;
 
       return res.status(200).json({
@@ -118,7 +116,7 @@ class UserController {
       });
     } catch (error) {
       return res.status(500).json({
-        message: 'internal server error',
+        message: 'server error',
       });
     }
   }
@@ -140,7 +138,7 @@ class UserController {
         return res.status(404).json({
           message: `user not found`,
         });
-        if (userDetails.status === "VERIFIED")
+      if (userDetails.status === "VERIFIED")
         return res.status(200).json({
           message: `user is already verified`,
         });
@@ -157,6 +155,53 @@ class UserController {
     }
   }
 
+  static async resetPassword(req, res) {
+    const user = await User.findOne({
+      raw: true,
+      where: {
+        [Op.and]: [{ resetPasswordToken: req.query.token, resetPasswordExpires: { [Op.gt]: Date.now() } }]
+      }
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'invalid or expired token' });
+    } else {
+      if (bcrypt.compareSync(req.body.newPassword, user.password))
+        return res.status(409).json({ message: 'you can\'t use the same password as before' });
+
+      const passwd = await bcrypt.hash(req.body.newPassword, 10);
+      const updatedUser = await User.update(
+        { resetPasswordToken: undefined, resetPasswordExpires: undefined, password: passwd },
+        { where: { resetPasswordToken: req.query.token } }
+      );
+      if (updatedUser) {
+        return res.status(200).json({ message: 'password changed succesfully' });
+      }
+    }
+    return res.status(500).json({ message: 'server error' });
+  }
+
+  static async forgotPassword(req, res) {
+    const resetPasswordToken = crypto.randomBytes(20).toString('hex');
+    const resetPasswordExpires = Date.now() + 300000; //expires in 5 min
+    const user = await User.findOne({ where: { email: req.params.email } });
+    if (!user) {
+      return res.status(404).json({ message: 'user not found' });
+    }
+
+    const updatedUser = await User.update(
+      { resetPasswordToken, resetPasswordExpires },
+      { where: { email: req.params.email } }
+    );
+
+    if (updatedUser) {
+      const link = "http://" + req.headers.host + "/reset-password/?token=" + resetPasswordToken;
+      sendResetPasswordLinkEmail(req.params.email, link);
+      return res.status(200).json({ message: 'reset password link has been sent to your email' });
+    }
+
+    return res.status(500).json({ message: 'server error' });
+  }
 }
 
 export default UserController;
