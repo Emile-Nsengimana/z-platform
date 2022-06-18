@@ -195,7 +195,7 @@ class UserController {
     );
 
     if (updatedUser) {
-      const link = "http://" + req.headers.host + "/reset-password/?token=" + resetPasswordToken;
+      const link = "http://" + req.headers.host + "/reset?token=" + resetPasswordToken;
       sendResetPasswordLinkEmail(req.params.email, link);
       return res.status(200).json({ message: 'reset password link has been sent to your email' });
     }
