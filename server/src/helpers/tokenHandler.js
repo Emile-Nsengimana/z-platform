@@ -28,15 +28,15 @@ class TokenHandler {
     }
   }
 
-  /**
-   *
-   * @param {object} token
-   * @returns {object} verified token
-   */
-  static async verifyToken(accessToken) {
-    const payload = await jwt.decode(process.env.ACCESS_TOKEN_SECRET, accessToken);
-    if (payload.error) return false;
-    return payload.value;
-  }
+  // /**
+  //  *
+  //  * @param {object} token
+  //  * @returns {object} verified token
+  //  */
+  // static async verifyToken(accessToken) {
+  //   const payload = await jwt.decode(process.env.ACCESS_TOKEN_SECRET, accessToken);
+  //   if (payload.error) return false;
+  //   return payload.value;
+  // }
 }
 export default TokenHandler;

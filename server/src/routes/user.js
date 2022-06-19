@@ -1,5 +1,5 @@
 import express from 'express';
-import userController from '../controllers/UsersController';
+import userController from '../controllers/UserController';
 import {
   signInSchema,
   signupSchema,
@@ -19,7 +19,7 @@ router.use('*', cloudinaryConfig);
 
 router.post('/signup', multerUploads, validator(signupSchema), userController.registerUser);
 router.post('/signin', validator(signInSchema), userController.signIn);
-router.put('/user', multerUploads, validator(additionalUserDetails), allowIfHasToken, userController.addUserVerificationInfo);
+router.put('/users', multerUploads, validator(additionalUserDetails), allowIfHasToken, userController.addUserVerificationInfo);
 
 router.put('/verify', validator(verifyUserSchema), userController.verifyUser);
 router.put('/reset', validator(verifyResetPasswordSchema), userController.resetPassword);

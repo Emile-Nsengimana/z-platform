@@ -12,16 +12,19 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
-import Modal from "./Modal";
+import Modal from "./UploadIdForm";
+import { useNavigate } from "react-router-dom";
 
  const settings = ['Upload ID image', 'Logout'];
 
-const ResponsiveAppBar = () => {
+const ResponsiveAppBar = ({userProfile}) => {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
 const [showModal, setShowModal] = React.useState(false);
+const navigate = useNavigate();
 
 const handleUploadVerificationDoc = () => {
+
   setShowModal(!showModal);
   handleCloseUserMenu();
 }
@@ -39,6 +42,11 @@ const handleUploadVerificationDoc = () => {
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
+
+  const handleLogout = () => {
+    window.sessionStorage.clear();
+    navigate("/login", { replace: false });
+  }
 
   return (
     <AppBar position="static">
@@ -88,7 +96,7 @@ const handleUploadVerificationDoc = () => {
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+                {userProfile != null && <Avatar alt="profile" src={userProfile.profileImage} />}
               </IconButton>
             </Tooltip>
             <Menu
@@ -110,7 +118,7 @@ const handleUploadVerificationDoc = () => {
              <MenuItem onClick={handleUploadVerificationDoc}>
                   <Typography textAlign="center">Upload verification file</Typography>
                 </MenuItem>
-                <MenuItem  onClick={handleCloseUserMenu}>
+                <MenuItem  onClick={handleLogout}>
                   <Typography textAlign="center">Logout</Typography>
                 </MenuItem>
             </Menu>

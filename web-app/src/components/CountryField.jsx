@@ -3,9 +3,9 @@ import {
 } from "@mui/material";
 import MenuItem from '@mui/material/MenuItem';
 
-const CountryField = () => {
+const CountryField = (props) => {
   return (
-    <TextField fullWidth autoComplete="Nationality" type="text" label="nationality">
+    <TextField fullWidth label="Nationality" select {...props}>
       <MenuItem value="afghan">Afghan</MenuItem>
       <MenuItem value="albanian">Albanian</MenuItem>
       <MenuItem value="algerian">Algerian</MenuItem>

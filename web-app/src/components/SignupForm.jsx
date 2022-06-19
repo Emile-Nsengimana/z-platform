@@ -8,29 +8,20 @@ import {
   TextField,
   IconButton,
   InputAdornment,
-
 } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
 import { Icon } from "@iconify/react";
- import CountryField from "./CountryField";
+import CountryField from "./CountryField";
 import MenuItem from '@mui/material/MenuItem';
+import { registerUser } from "../api/auth";
+import toast from 'react-hot-toast';
 
-
-let easing = [0.6, -0.05, 0.01, 0.99];
-const animate = {
-  opacity: 1,
-  y: 0,
-  transition: {
-    duration: 0.6,
-    ease: easing,
-    delay: 0.16,
-  },
-};
 
 const SignupForm = ({ setAuth }) => {
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const SignupSchema = Yup.object().shape({
     firstName: Yup.string()
@@ -53,8 +44,8 @@ const SignupForm = ({ setAuth }) => {
       lastName: "",
       email: "",
       gender: "",
+      dob: "",
       age: "",
-      identificationNumber: "",
       maritalStatus: "",
       nationality: "",
       profilePicture: "",
@@ -62,21 +53,19 @@ const SignupForm = ({ setAuth }) => {
       confirmPassword: ""
     },
     validationSchema: SignupSchema,
-    onSubmit: (values) => {
-       console.log("values: ", values);
+    onSubmit: async (values, { setSubmitting }) => {
+      const res = await registerUser(values);
+      if (res.error) setSubmitting(false);
     },
   });
 
-  const { errors, touched, handleSubmit, isSubmitting, getFieldProps } = formik;
+  const { errors, touched, handleSubmit, isSubmitting, setFieldValue, getFieldProps } = formik;
 
   return (
     <FormikProvider value={formik}>
       <Form autoComplete="off" noValidate onSubmit={handleSubmit}>
         <Stack spacing={4}>
-          <Stack 
-            initial={{ opacity: 0, y: 60 }}
-            animate={animate}
-            direction={{ xs: "column", sm: "row" }}
+          <Stack initial={{ opacity: 0, y: 60 }} direction={{ xs: "column", sm: "row" }}
             spacing={2}
           >
             <TextField
@@ -95,9 +84,8 @@ const SignupForm = ({ setAuth }) => {
               helperText={touched.lastName && errors.lastName}
             />
           </Stack>
-          <Stack 
+          <Stack
             initial={{ opacity: 0, y: 60 }}
-            animate={animate}
             direction={{ xs: "column", sm: "row" }}
             spacing={2}
           >
@@ -105,20 +93,16 @@ const SignupForm = ({ setAuth }) => {
               fullWidth
               type="date"
               label="Date of birth"
-              {...getFieldProps("dateOfBirth")}
+              {...getFieldProps("dob")}
             />
 
             <TextField
               fullWidth
-              label="Age" 
+              label="Age"
+              {...getFieldProps("age")}
             />
           </Stack>
-          <Stack
-            spacing={3} 
-            initial={{ opacity: 0, y: 40 }}
-            direction={{ xs: "column", sm: "row" }}
-            animate={animate}
-          >
+          <Stack spacing={3} initial={{ opacity: 0, y: 40 }} direction={{ xs: "column", sm: "row" }}>
             <TextField
               fullWidth
               autoComplete="email"
@@ -131,72 +115,41 @@ const SignupForm = ({ setAuth }) => {
 
             <TextField
               fullWidth
-              autoComplete="gender"
-              type="text"
-              label="Gender" 
-              select
+              label="Gender"
+              name="gender"
+              variant="outlined"
+              {...getFieldProps("gender")} select
             >
-              <MenuItem value="Female">
-                Female
-              </MenuItem>
-              <MenuItem value="Male">
-                Male
-              </MenuItem>
+              <MenuItem value="Female"> Female </MenuItem>
+              <MenuItem value="Male"> Male </MenuItem>
             </TextField>
-             
           </Stack>
-          <Stack
-            spacing={3} 
-            initial={{ opacity: 0, y: 40 }}
-            direction={{ xs: "column", sm: "row" }}
-            animate={animate}
-          >
+          <Stack spacing={3} initial={{ opacity: 0, y: 40 }} direction={{ xs: "column", sm: "row" }}>
             <TextField
               fullWidth
-              autoComplete="Marital status"
-              type="text"
-              label="Marital status" 
-              select
+              name="gender"
+              variant="outlined"
+              label="Marital status"
+              {...getFieldProps("maritalStatus")} select
             >
-              <MenuItem value="SINGLE">
-              Single
-              </MenuItem>
-              <MenuItem value="MARRIED">
-              Married
-              </MenuItem>
-              <MenuItem value="DIVORCED">
-             Divorced
-              </MenuItem>
-              <MenuItem value="WIDOWED">
-             Widowed
-              </MenuItem>
+              <MenuItem value="SINGLE"> Single </MenuItem>
+              <MenuItem value="MARRIED"> Married </MenuItem>
+              <MenuItem value="DIVORCED"> Divorced </MenuItem>
+              <MenuItem value="WIDOWED"> Widowed </MenuItem>
             </TextField>
-            <CountryField /> 
+            <CountryField {...getFieldProps("nationality")} />
           </Stack>
-          <Stack
-            spacing={3} 
-            initial={{ opacity: 0, y: 40 }}
-            direction={{ xs: "column", sm: "row" }}
-            animate={animate}
-          >
-             <TextField
+          <Stack spacing={3} initial={{ opacity: 0, y: 40 }} direction={{ xs: "column", sm: "row" }}   >
+            <TextField
               fullWidth
-              autoComplete="current-password"
               type={showPassword ? "text" : "password"}
               label="Password"
               {...getFieldProps("password")}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton
-                      edge="end"
-                      onClick={() => setShowPassword((prev) => !prev)}
-                    >
-                      <Icon
-                        icon={
-                          showPassword ? "eva:eye-fill" : "eva:eye-off-fill"
-                        }
-                      />
+                    <IconButton edge="end" onClick={() => setShowPassword((prev) => !prev)}  >
+                      <Icon icon={showPassword ? "eva:eye-fill" : "eva:eye-off-fill"} />
                     </IconButton>
                   </InputAdornment>
                 ),
@@ -204,46 +157,40 @@ const SignupForm = ({ setAuth }) => {
               error={Boolean(touched.password && errors.password)}
               helperText={touched.password && errors.password}
             />
-             <TextField
+            <TextField
               fullWidth
-              autoComplete="confirm-password"
-              type={showPassword ? "text" : "password"}
+              type={showConfirmPassword ? "text" : "password"}
               label="Confirm password"
-               InputProps={{
+              {...getFieldProps("confirmPassword")}
+              InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton
-                      edge="end"
-                      onClick={() => setShowPassword((prev) => !prev)}
-                    >
-                      <Icon
-                        icon={
-                          showPassword ? "eva:eye-fill" : "eva:eye-off-fill"
-                        }
-                      />
+                    <IconButton edge="end" onClick={() => setShowConfirmPassword((prev) => !prev)}  >
+                      <Icon icon={showPassword ? "eva:eye-fill" : "eva:eye-off-fill"} />
                     </IconButton>
                   </InputAdornment>
                 ),
-              }} 
+              }}
             />
           </Stack>
           <Stack
-            spacing={3} 
+            spacing={3}
             initial={{ opacity: 0, y: 40 }}
             direction={{ xs: "column", sm: "row" }}
-            animate={animate}
           >
-            <TextField   InputLabelProps={{ shrink: true }}
-inputProps={{accept: "image/png, image/gif, image/jpeg"}}
+            <TextField InputLabelProps={{ shrink: true }}
+              inputProps={{ accept: "image/png, image/gif, image/jpeg" }}
               fullWidth
               type="file"
-              label="Profile image"
+              label="Profile image" onChange={(event) => {
+                setFieldValue("profilePicture", event.currentTarget.files[0]);
+              }}
+            // {...getFieldProps("profilePicture")} 
             />
-              
+
           </Stack>
-          <Box 
+          <Box
             initial={{ opacity: 0, y: 20 }}
-            animate={animate}
           >
             <LoadingButton
               fullWidth

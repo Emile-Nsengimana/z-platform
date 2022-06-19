@@ -61,10 +61,10 @@ class UserService {
  * @param {String} user
  * @returns {Object} user
  */
-  static async getUserById(identificationNumber) {
-    const user = await User.findOne({ raw: true, where: { identificationNumber } });
-    return user;
-  }
+  // static async getUserById(identificationNumber) {
+  //   const user = await User.findOne({ raw: true, where: { identificationNumber } });
+  //   return user;
+  // }
    /**
    * verify user
    * @param {*} req

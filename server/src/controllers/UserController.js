@@ -27,7 +27,7 @@ class UserController {
       //If user with the same email exist, hart registration
       if (emailExist) {
         return res.status(409).json({
-          message: `email has been used before`,
+          error: `email has been used before`,
         });
       }
 
@@ -45,52 +45,57 @@ class UserController {
       const user = await UserService.createUser(req.body);
       const token = await TokenHandler.generateToken(user);
       return res.status(201).json({
-        message: 'thank you for joining us, please check your email for verification',
+        message: 'thank you for joining us, please login and upload ID image for verification',
         data: { ...user, token },
       });
     } catch (error) {
-      if (error.errors) return res.status(400).json({ message: error.errors[0].message });
-      return res.status(500).json({ message: 'server error' });
+      if (error.errors) return res.status(400).json({ error: error.errors[0].message });
+      return res.status(500).json({ error: 'server error' });
     }
   }
 
+   /**
+   *
+   * @param {object} req
+   * @param {object} res
+   * @returns {string} acknowledgement message
+   */
   static async addUserVerificationInfo(req, res) {
     try {
       const { email } = req.user;
       const { identificationNumber } = req.body;
 
-      const emailExist = await UserService.getUserByEmail(email);
-      const UPLOADS = process.env.ADDITIONAL_FILE_PATH;
+      const UPLOADS = process.env.ADDITIONAL_FILE_PATH; // path to store uploaded ID images
+     
+      //If user not found, stop
+      const userDetails = await UserService.getUserByEmail(email);
+      if (!userDetails)
+        return res.status(404).json({ error: `user not found` });
 
-      if (!emailExist)
-        return res.status(404).json({
-          message: `user not found`,
-        });
+      //If user is verified, no need to upload ID image
+      if(userDetails.status === "VERIFIED")
+        return res.status(404).json({ error: 'ID already exist and verified' });
 
-      // handle files
+      //Extraction of ID image from the request
       let supportDoc;
-
       if (req.files.additionalDoc !== undefined) {
         for (const file of req.files.additionalDoc) {
           const fileName = `${Date.now()}-${req.body.identificationNumber}-${file.originalname}`;
           const dataBuffer = new Buffer.from(file.buffer);
 
-          UPLOADS === undefined ? await fs.writeFileSync(`${__dirname}/../uploads/${fileName}`, dataBuffer, null)
+          UPLOADS === undefined ? await fs.writeFileSync(`${__dirname}/../../uploads/${fileName}`, dataBuffer, null)
             : await fs.writeFileSync(`${UPLOADS}/${fileName}`, dataBuffer, null);
           supportDoc = fileName;
         }
       }
 
-      req.body.supportDoc = supportDoc;
       const user = await User.update({ identificationNumber, supportDoc, status: 'PENDING VERIFICATION' }, { where: { email } });
-
       return res.status(200).json({
-        message: 'user info update successfully'
+        message: 'ID uploaded successfully'
       });
     } catch (error) {
-      console.log(">>>>>>>>", error);
-      if (error.errors) return res.status(400).json({ message: error.errors[0].message });
-      return res.status(500).json({ message: 'server error' });
+      if (error.errors) return res.status(400).json({ error: error.errors[0].message });
+      return res.status(error).json({ error: 'server error' });
     }
   }
 
@@ -102,10 +107,10 @@ class UserController {
   static async signIn(req, res) {
     try {
       const user = await UserService.getUserByEmail(req.body.email.trim());
-      if (user === null) return res.status(404).json({ message: `user not found` });
+      if (user === null) return res.status(404).json({ error: `user not found` });
 
       if (!bcrypt.compareSync(req.body.password, user.password))
-        return res.status(401).json({ message: 'invalid credentials' });
+        return res.status(401).json({ error: 'invalid credentials' });
 
       const token = await TokenHandler.generateToken(user);
       const { password, ...userInfo } = user;
@@ -116,7 +121,7 @@ class UserController {
       });
     } catch (error) {
       return res.status(500).json({
-        message: 'server error',
+        error: 'server error',
       });
     }
   }
@@ -136,7 +141,7 @@ class UserController {
 
       if (!userDetails)
         return res.status(404).json({
-          message: `user not found`,
+          error: `user not found`,
         });
       if (userDetails.status === "VERIFIED")
         return res.status(200).json({
@@ -151,7 +156,7 @@ class UserController {
         }
       });
     } catch (error) {
-      return res.status(500).json({ message: 'server error' });
+      return res.status(500).json({ error: 'server error' });
     }
   }
 
@@ -164,10 +169,10 @@ class UserController {
     });
 
     if (!user) {
-      return res.status(400).json({ message: 'invalid or expired token' });
+      return res.status(400).json({ error: 'invalid or expired token' });
     } else {
       if (bcrypt.compareSync(req.body.newPassword, user.password))
-        return res.status(409).json({ message: 'you can\'t use the same password as before' });
+        return res.status(409).json({ error: 'you can\'t use the same password as before' });
 
       const passwd = await bcrypt.hash(req.body.newPassword, 10);
       const updatedUser = await User.update(
@@ -178,7 +183,7 @@ class UserController {
         return res.status(200).json({ message: 'password changed succesfully' });
       }
     }
-    return res.status(500).json({ message: 'server error' });
+    return res.status(500).json({ error: 'server error' });
   }
 
   static async forgotPassword(req, res) {
@@ -186,7 +191,7 @@ class UserController {
     const resetPasswordExpires = Date.now() + 300000; //expires in 5 min
     const user = await User.findOne({ where: { email: req.params.email } });
     if (!user) {
-      return res.status(404).json({ message: 'user not found' });
+      return res.status(404).json({ error: 'user not found' });
     }
 
     const updatedUser = await User.update(
@@ -195,12 +200,12 @@ class UserController {
     );
 
     if (updatedUser) {
-      const link = "http://" + req.headers.host + "/reset?token=" + resetPasswordToken;
+      const link = req.headers.origin + "/reset?token=" + resetPasswordToken;
       sendResetPasswordLinkEmail(req.params.email, link);
       return res.status(200).json({ message: 'reset password link has been sent to your email' });
     }
 
-    return res.status(500).json({ message: 'server error' });
+    return res.status(500).json({ error: 'server error' });
   }
 }
 

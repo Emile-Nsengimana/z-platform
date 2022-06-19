@@ -20,6 +20,7 @@ export const signupSchema = joi.object().keys({
 
 export const additionalUserDetails = joi.object().keys({
    identificationNumber: joi.number().required(),
+   additionalDoc: joi.binary(),
 });
 
 export const signInSchema = joi.object().keys({

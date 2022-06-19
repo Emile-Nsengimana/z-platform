@@ -6,6 +6,7 @@ import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import MultiFactorAuth from "./pages/MultiFactorAuth";
+import toast, { Toaster } from 'react-hot-toast';
 
 import axios from "axios";
 import { AppProvider, useMyContext } from "./AppProvider";
@@ -14,9 +15,12 @@ axios.defaults.baseURL = process.env.REACT_APP_BACKEND_URL;
 
 function App() {
   const state = useMyContext();
- 
+
   return (
     <>
+      <Toaster
+        toastOptions={{ duration: 5000 }} />
+
       <CssBaseline />
       <AppProvider>
         <Routes>
@@ -25,7 +29,7 @@ function App() {
           <Route path="/verify" element={<MultiFactorAuth />} />
           <Route path="/reset" element={<ResetPassword />} />
           <Route path="/signup" element={<Signup />} />
-          <Route  path="/"  element={ <Home /> } />
+          <Route path="/" element={<Home />} />
         </Routes>
       </AppProvider>
     </>

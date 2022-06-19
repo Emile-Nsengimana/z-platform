@@ -4,54 +4,30 @@ import { Form, FormikProvider, useFormik } from "formik";
 import * as Yup from "yup";
 import {
   Box,
-  Checkbox,
-  FormControlLabel,
-  IconButton,
-  InputAdornment,
   Link,
   Stack,
   TextField,
 } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
-import { Icon } from "@iconify/react";
-import { login } from "../api/auth";
-import { useMyUpdateContext } from "../AppProvider";
+import { forgotPassword } from "../api/auth";
 
 const ForgotPasswordForm = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const from = location.state?.from?.pathname || "/";
-  const handleStateUpdate = useMyUpdateContext();
-
-  const [showPassword, setShowPassword] = useState(false);
-
+ 
   const ValidationSchema = Yup.object().shape({
-    email: Yup.string()
-      .email("invalid email address")
-      .required("Email is required"),
+    email: Yup.string().email("invalid email address").required("Email is required"),
   });
 
-  const handleForgotPassword = async (payload) => {
-    const res = await login(payload);
-    console.log("Res: ", res);
-    if (!res.data) setIsSubmitting(false);
-    handleStateUpdate({ authenticated: true });
-    handleStateUpdate({ userProfile: res.data });
-    navigate(from, { replace: true });
-  }
   const formik = useFormik({
-    initialValues: {
-      email: "",
-      password: "",
-    },
+    initialValues: {  email: "" },
     validationSchema: ValidationSchema,
-    onSubmit: (values) => {
-      handleForgotPassword(values);
+    onSubmit: async (values, { setSubmitting }) => {
+      const res = await forgotPassword(values.email);
+      if(res.error) setSubmitting(false);
     },
   });
 
-  const { errors, touched, values, isSubmitting, setIsSubmitting, handleSubmit, getFieldProps } =
-    formik;
+  const { errors, touched, values, isSubmitting, handleSubmit, getFieldProps } = formik;
 
   return (
     <FormikProvider value={formik}>

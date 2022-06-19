@@ -7,3 +7,4 @@ yarn.lock
 
 #Hidden files
 server/.env
+server/.nyc_output
