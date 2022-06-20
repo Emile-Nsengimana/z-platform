@@ -14,7 +14,7 @@ const config = {
   test: {
     username: process.env.TEST_DB_USERNAME,
     password: process.env.TEST_DB_PASSWORD,
-    database: 'companyz_test',
+    database: process.env.TEST_DB_NAME,
     host: '127.0.0.1',
     dialect: 'postgres',
     operatorsAliases: false,

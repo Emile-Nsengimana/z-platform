@@ -79,7 +79,7 @@ export const uploadId = async (formData) => {
     const URL = "/auth/users";
     const res = await axios.put(URL, info, header);
 
-    if (res.status == 200) {
+    if (res.status === 200) {
       toast.success(res.data.message);
       return res.data;
     }

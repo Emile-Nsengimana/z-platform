@@ -93,6 +93,7 @@ const SignupForm = ({ setAuth }) => {
               fullWidth
               type="date"
               label="Date of birth"
+              InputProps={{ inputProps: { max: "2022-01-01" } }}
               {...getFieldProps("dob")}
             />
 
