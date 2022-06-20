@@ -64,7 +64,7 @@ console.log(authenticated);
     <p><span style={{fontWeight: 700}}>Gender: </span>{userProfile.gender}</p>
     <p><span style={{fontWeight: 700}}>Marital status: </span>{userProfile.maritalStatus}</p>
     <p><span style={{fontWeight: 700}}>Nationality: </span>{userProfile.nationality}</p>
-    <p><span style={{fontWeight: 700}}>ID number: </span>{userProfile.identificationNumber}</p>
+    <p><span style={{fontWeight: 700}}>ID number: </span>{userProfile.identificationNumber ? userProfile.identificationNumber : 'N/A'}</p>
   </Item>
 </Grid>
 
