@@ -6,6 +6,9 @@
   "repository": "https://github.com/Emile-Nsengimana/z-platform.git",
   "author": "Emile-Nsengimana <emilereas7@gmail.com>",
   "license": "MIT",
+  "engines": {
+    "node": "16.x"
+  },
   "scripts": {
     "start": "node build/server.js",
     "start:dev": "nodemon --exec babel-node src/server",
