@@ -167,3 +167,4 @@ describe('User authentication tests', () => {
         done();
       });
   });
+});
