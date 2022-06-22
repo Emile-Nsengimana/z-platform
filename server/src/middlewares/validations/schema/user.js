@@ -5,7 +5,7 @@ export const signupSchema = joi.object().keys({
   lastName: joi.string().min(3).required().label('lastName').required(),
   gender: joi.any().valid('Male', 'Female', 'Other'),
   age: joi.number().min(1).max(200).message('invalid age'),
-  dob:joi.date(),
+  dob: joi.date().max('now'),
   maritalStatus: joi.any().valid('SINGLE', 'MARRIED', 'DIVORCED', 'WIDOWED').required(),
   nationality: joi.string(),
   profilePicture: joi.any(),

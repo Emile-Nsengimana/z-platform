@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
+import React from "react";
+import { Link as RouterLink } from "react-router-dom";
 import { Form, FormikProvider, useFormik } from "formik";
 import * as Yup from "yup";
 import {
@@ -12,22 +12,21 @@ import { LoadingButton } from "@mui/lab";
 import { forgotPassword } from "../api/auth";
 
 const ForgotPasswordForm = () => {
-  const navigate = useNavigate();
- 
+
   const ValidationSchema = Yup.object().shape({
     email: Yup.string().email("invalid email address").required("Email is required"),
   });
 
   const formik = useFormik({
-    initialValues: {  email: "" },
+    initialValues: { email: "" },
     validationSchema: ValidationSchema,
     onSubmit: async (values, { setSubmitting }) => {
       const res = await forgotPassword(values.email);
-      if(res.error) setSubmitting(false);
+      if (res.error) setSubmitting(false);
     },
   });
 
-  const { errors, touched, values, isSubmitting, handleSubmit, getFieldProps } = formik;
+  const { errors, touched, isSubmitting, handleSubmit, getFieldProps } = formik;
 
   return (
     <FormikProvider value={formik}>

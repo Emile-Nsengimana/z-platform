@@ -11,7 +11,6 @@ export const useMyUpdateContext = () => {
     return useContext(UpdateContext);
 }
 
-
 export function AppProvider({children}) {
   const [state, setState] = useState({
     authenticated: false,

@@ -1,21 +1,23 @@
 import { CssBaseline } from "@mui/material";
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import MultiFactorAuth from "./pages/MultiFactorAuth";
-import toast, { Toaster } from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
 
 import axios from "axios";
-import { AppProvider, useMyContext } from "./AppProvider";
-
+import { AppProvider } from "./AppProvider";
+import { Navigate } from "react-router-dom"
 axios.defaults.baseURL = process.env.REACT_APP_BACKEND_URL;
 
-function App() {
-  const state = useMyContext();
 
+function App() {
+  const accessToken = window.sessionStorage.getItem('access_token');
+  const user = JSON.parse(window.sessionStorage.getItem('user'));
+  const isAauthenticated = accessToken !== null && user !== null;
   return (
     <>
       <Toaster
@@ -25,11 +27,14 @@ function App() {
       <AppProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/verify" element={<MultiFactorAuth />} />
-          <Route path="/reset" element={<ResetPassword />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/" element={<Home />} />
+          {isAauthenticated ?
+            <>
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/verify" element={<MultiFactorAuth />} />
+              <Route path="/reset" element={<ResetPassword />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/" element={<Home />} />
+            </> : Navigate("/login")}
         </Routes>
       </AppProvider>
     </>
