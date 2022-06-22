@@ -19,7 +19,8 @@ router.use('*', cloudinaryConfig);
 
 router.post('/signup', multerUploads, validator(signupSchema), userController.registerUser);
 router.post('/signin', validator(signInSchema), userController.signIn);
-router.put('/users', multerUploads, validator(additionalUserDetails), allowIfHasToken, userController.addUserVerificationInfo);
+router.post('/multi-factor', allowIfHasToken, userController.multiFactorAuth);
+router.put('/users', multerUploads, validator(additionalUserDetails), allowIfHasToken, userController.uploadIDimage);
 
 router.put('/verify', validator(verifyUserSchema), userController.verifyUser);
 router.put('/reset', validator(verifyResetPasswordSchema), userController.resetPassword);

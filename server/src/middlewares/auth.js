@@ -1,5 +1,6 @@
-import jwt from "json-web-token";
+import jwt from "jsonwebtoken";
 import model from "../db/models";
+import tokenHandler from "../helpers/tokenHandler";
 
 const { User } = model;
 
@@ -11,13 +12,13 @@ exports.allowIfHasToken = async (req, res, next) => {
                 RangeError: 'no token provided',
             });
         if (token) {
-            const tokenPayload = await jwt.decode(process.env.ACCESS_TOKEN_SECRET, token);
-            const { id, expiresIn } = tokenPayload.value;
+            const tokenPayload = await tokenHandler.verifyToken(token);
+             const { id, exp } = tokenPayload;
 
             // Check if token has expired
-            if (expiresIn < Math.floor(Date.now() / 1000)) {
+            if (exp < Math.floor(Date.now() / 1000)) {
                 return res.status(401).json({
-                    error: 'token has expired, please login to obtain a new one',
+                    error: 'session has expired, please login again',
                 });
             }
             req.user = await User.findOne({ raw: true, where: { id } });
@@ -29,8 +30,9 @@ exports.allowIfHasToken = async (req, res, next) => {
                 error: error.errors[0].message,
             });
         }
-        return res.status(500).json({
-            error: 'server Error',
+
+        return res.status(401).json({
+            error: 'session has expired, please login again',
         });
     }
 };

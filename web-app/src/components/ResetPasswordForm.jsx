@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
+import { Link as RouterLink, useLocation } from "react-router-dom";
 import { Form, FormikProvider, useFormik } from "formik";
 import * as Yup from "yup";
 import {
@@ -16,11 +16,8 @@ import { resetPassword } from "../api/auth";
 import toast from 'react-hot-toast';
 
 const LoginForm = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
   const { search } = useLocation();
   const token = React.useMemo(() => new URLSearchParams(search), [search]).get('token');
-
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -37,7 +34,7 @@ const LoginForm = () => {
     validationSchema: ValidationSchema,
     onSubmit: async (values, { setSubmitting }) => {
       const res = await resetPassword(values, token);
-      console.log(res);
+
       if (!res.error) {
         toast.success("you can now login with your new password");
         // navigate("/login", { replace: true });
@@ -45,7 +42,7 @@ const LoginForm = () => {
     },
   });
 
-  const { errors, touched, values, isSubmitting, handleSubmit, getFieldProps } = formik;
+  const { errors, touched, isSubmitting, handleSubmit, getFieldProps } = formik;
 
   return (
     <FormikProvider value={formik}>

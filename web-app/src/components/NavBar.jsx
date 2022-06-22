@@ -5,38 +5,26 @@ import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Menu from '@mui/material/Menu';
-import MenuIcon from '@mui/icons-material/Menu';
 import Container from '@mui/material/Container';
 import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
-import AdbIcon from '@mui/icons-material/Adb';
 import Modal from "./UploadIdForm";
 import { useNavigate } from "react-router-dom";
 
- const settings = ['Upload ID image', 'Logout'];
-
-const ResponsiveAppBar = ({userProfile}) => {
-  const [anchorElNav, setAnchorElNav] = React.useState(null);
+const ResponsiveAppBar = ({ userProfile }) => {
   const [anchorElUser, setAnchorElUser] = React.useState(null);
-const [showModal, setShowModal] = React.useState(false);
-const navigate = useNavigate();
+  const [showModal, setShowModal] = React.useState(false);
+  const navigate = useNavigate();
 
-const handleUploadVerificationDoc = () => {
+  const handleUploadVerificationDoc = () => {
 
-  setShowModal(!showModal);
-  handleCloseUserMenu();
-}
-  const handleOpenNavMenu = (event) => {
-    setAnchorElNav(event.currentTarget);
-  };
+    setShowModal(!showModal);
+    handleCloseUserMenu();
+  }
+
   const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);
-  };
-
-  const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
   };
 
   const handleCloseUserMenu = () => {
@@ -71,7 +59,7 @@ const handleUploadVerificationDoc = () => {
           >
             Zplatform
           </Typography>
-                  <Typography
+          <Typography
             variant="h5"
             noWrap
             component="a"
@@ -90,7 +78,7 @@ const handleUploadVerificationDoc = () => {
             Zplatform
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-             
+
           </Box>
 
           <Box sx={{ flexGrow: 0 }}>
@@ -115,12 +103,12 @@ const handleUploadVerificationDoc = () => {
               open={Boolean(anchorElUser)}
               onClose={handleCloseUserMenu}
             >
-             <MenuItem onClick={handleUploadVerificationDoc}>
-                  <Typography textAlign="center">Upload verification file</Typography>
-                </MenuItem>
-                <MenuItem  onClick={handleLogout}>
-                  <Typography textAlign="center">Logout</Typography>
-                </MenuItem>
+              <MenuItem onClick={handleUploadVerificationDoc}>
+                <Typography textAlign="center">Upload verification file</Typography>
+              </MenuItem>
+              <MenuItem onClick={handleLogout}>
+                <Typography textAlign="center">Logout</Typography>
+              </MenuItem>
             </Menu>
           </Box>
         </Toolbar>
